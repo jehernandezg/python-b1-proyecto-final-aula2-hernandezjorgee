@@ -14,7 +14,7 @@ class Product(ABC):
     def type(self) -> str:
         pass
     @abstractmethod
-    def foodPackage(self)-> FoodPackage:
+    def foodPackage(self):
         pass  
 
 class Hamburger(Product):
@@ -22,7 +22,7 @@ class Hamburger(Product):
         super().__init__(id,name,price)
     def type(self) -> str:
         return "Hamburger"
-    def foodPackage(self) -> FoodPackage:
+    def foodPackage(self):
         return Wrapping()
         
 class Soda(Product):
@@ -30,7 +30,7 @@ class Soda(Product):
         super().__init__(id,name,price)
     def type(self) -> str:
         return "Soda"
-    def foodPackage(self) -> FoodPackage:
+    def foodPackage(self):
         return Bottle()
 
 class Drink(Product):
@@ -38,7 +38,7 @@ class Drink(Product):
         super().__init__(id,name,price)
     def type(self) -> str:
         return "Drink"
-    def foodPackage(self) -> FoodPackage:
+    def foodPackage(self):
         return Glass()
 
 class HappyMeal(Product):
@@ -46,7 +46,7 @@ class HappyMeal(Product):
         super().__init__(id,name,price)
     def type(self) -> str:
         return "Happy Meal"
-    def foodPackage(self) -> FoodPackage:
+    def foodPackage(self):
         return Box()
 
         
