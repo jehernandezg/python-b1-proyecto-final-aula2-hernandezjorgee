@@ -22,3 +22,4 @@ class Order:
     for i, product in enumerate(self.products, 1):
       print(f"Product {i}: {product.describe()}")
     print(f"Total price : {self.calculateTotal()}")
+
