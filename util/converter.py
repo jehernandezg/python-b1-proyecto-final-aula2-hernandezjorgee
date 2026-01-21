@@ -1,8 +1,6 @@
 from abc import ABC, abstractmethod
-#Write your code here
-
-from products.product import Product
-from users.user import Cashier, Customer
+from users import Cashier, Customer
+# No importamos Product aquí para evitar dependencias circulares, se pasan como args
 
 class Converter(ABC):
   @abstractmethod
@@ -13,55 +11,29 @@ class Converter(ABC):
       print(item.describe())
 
 class CashierConverter(Converter):
-
-    def convert(self,dataFrame, *args) -> list:  
-    #Write your code here
-        cashiers = []
-        for index, row in dataFrame.iterrows():
-            # Asumiendo que las columnas del CSV coinciden con los nombres
-            cashier = Cashier(
-                dni=str(row['dni']),
-                name=row['name'],
-                age=int(row['age']),
-                timetable=row['timetable'],
-                salary=float(row['salary'])
-            )
-            cashiers.append(cashier)
-        return cashiers
-
-    pass
+  def convert(self,dataFrame, *args):    
+    result = []
+    for _, row in dataFrame.iterrows():
+        # Crea instancia de Cashier usando las columnas del CSV
+        cashier = Cashier(str(row['dni']), row['name'], int(row['age']), row['timetable'], float(row['salary']))
+        result.append(cashier)
+    return result
 
 class CustomerConverter(Converter):
-  #Write your code here
-    def convert(self, dataFrame, *args) -> list:
-        customers = []
-        for index, row in dataFrame.iterrows():
-            customer = Customer(
-                dni=str(row['dni']),
-                name=row['name'],
-                age=int(row['age']),
-                email=row['email'],
-                postalcode=str(row['postalcode'])
-            )
-            customers.append(customer)
-        return customers
-
-    pass
+  def convert(self,dataFrame, *args):
+    result = []
+    for _, row in dataFrame.iterrows():
+        # Crea instancia de Customer
+        customer = Customer(str(row['dni']), row['name'], int(row['age']), row['email'], str(row['postalcode']))
+        result.append(customer)
+    return result
 
 class ProductConverter(Converter):
-  #Write your code here
-    def convert(self, dataFrame, *args) -> list:
-        # *args[0] se espera que sea la Clase del producto (ej: Hamburger, Soda)
-        product_class = args[0]
-        products = []
-        for index, row in dataFrame.iterrows():
-            product = product_class(
-                id=str(row['id']),
-                name=row['name'],
-                price=float(row['price'])
-            )
-            products.append(product)
-        return products
-
-
-    pass
+  def convert(self,dataFrame, *args):
+    result = []
+    # args[0] será la clase (ej. Hamburger, Soda)
+    product_class = args[0]
+    for _, row in dataFrame.iterrows():
+        product = product_class(str(row['id']), row['name'], float(row['price']))
+        result.append(product)
+    return result
