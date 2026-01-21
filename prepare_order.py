@@ -102,131 +102,89 @@ f.	Agregar productos: Utilizar la instancia la clase 'Order', del paso c y llama
 
 """
 #Write your code here
-import sys
-from products.product import Drink, Hamburger, HappyMeal, Soda
-from users import Cashier, Customer 
-from util.converter import CashierConverter, CustomerConverter, ProductConverter
-from util.file_manager import CSVFileManager
-from orders.order import Order
 
 from users import *
-
+from products import Hamburger, Soda, Drink, HappyMeal
+from util import CSVFileManager, CashierConverter, CustomerConverter, ProductConverter
+from orders import Order
     
 class PrepareOrder:
- #Write your code here
-
-    # Método estático para no requerir instanciar la clase PrepareOrder
-    @staticmethod
-    def main():
-        print("--- SISTEMA DE COMIDA RÁPIDA ---\n")
-        
+    def run(self):
         # 1. Leer archivos CSV
-        print("Cargando datos del sistema...")
-        fm_cashiers = CSVFileManager("data/cashiers.csv")
-        fm_customers = CSVFileManager("data/customers.csv")
-        fm_hamburgers = CSVFileManager("data/hamburgers.csv")
-        fm_sodas = CSVFileManager("data/sodas.csv")
-        fm_drinks = CSVFileManager("data/drinks.csv")
-        fm_happymeals = CSVFileManager("data/happyMeal.csv")
+        # Se asume que la carpeta 'data' está en el mismo directorio
+        df_cashiers = CSVFileManager("data/cashiers.csv").read()
+        df_customers = CSVFileManager("data/customers.csv").read()
+        df_hamburgers = CSVFileManager("data/hamburgers.csv").read()
+        df_sodas = CSVFileManager("data/sodas.csv").read()
+        df_drinks = CSVFileManager("data/drinks.csv").read()
+        df_happy = CSVFileManager("data/happyMeal.csv").read()
 
-        # Leer DataFrames
-        df_cashiers = fm_cashiers.read()
-        df_customers = fm_customers.read()
-        df_hamburgers = fm_hamburgers.read()
-        df_sodas = fm_sodas.read()
-        df_drinks = fm_drinks.read()
-        df_happymeals = fm_happymeals.read()
-
-        # Verificar si la carga falló (DataFrames vacíos)
-        if df_cashiers.empty or df_customers.empty:
-            print("Error cargando archivos críticos (cajeros o clientes). Verifique la carpeta 'data/'.")
-            return
-
-        # 2. Convertir a objetos
-        # Cajeros
-        c_conv = CashierConverter()
-        cashiers_list = c_conv.convert(df_cashiers)
+        # 2. Convertir a listas de objetos
+        cashier_converter = CashierConverter()
+        cashiers_list = cashier_converter.convert(df_cashiers)
         
-        # Clientes
-        cust_conv = CustomerConverter()
-        customers_list = cust_conv.convert(df_customers)
+        customer_converter = CustomerConverter()
+        customers_list = customer_converter.convert(df_customers)
         
-        # Productos
-        p_conv = ProductConverter()
-        hamburgers_list = p_conv.convert(df_hamburgers, Hamburger)
-        sodas_list = p_conv.convert(df_sodas, Soda)
-        drinks_list = p_conv.convert(df_drinks, Drink)
-        happymeals_list = p_conv.convert(df_happymeals, HappyMeal)
-
-        # Lista unificada
-        all_products = hamburgers_list + sodas_list + drinks_list + happymeals_list
-
-        print(f"Datos cargados: {len(cashiers_list)} cajeros, {len(customers_list)} clientes, {len(all_products)} productos.")
-
-        # Mostrar Cajeros (Requerimiento)
-        print("\n--- Cajeros Disponibles ---")
-        c_conv.print(cashiers_list)
+        # Convertir productos pasando la clase correspondiente
+        product_converter = ProductConverter()
+        products_list = []
+        products_list.extend(product_converter.convert(df_hamburgers, Hamburger))
+        products_list.extend(product_converter.convert(df_sodas, Soda))
+        products_list.extend(product_converter.convert(df_drinks, Drink))
+        products_list.extend(product_converter.convert(df_happy, HappyMeal))
 
         # 3. Preparar Orden
         
         # a. Buscar cajero
-        selected_cashier = None
-        while selected_cashier is None:
-            dni_in = input("\nIntroduce DNI del cajero (ej. 5001): ")
-            for c in cashiers_list:
-                # Comparamos como string para evitar errores de tipo
-                if str(c.dni) == dni_in.strip():
-                    selected_cashier = c
-                    break
-            if selected_cashier:
-                print(f"Seleccionado: {selected_cashier.describe()}")
-            else:
-                print("Cajero no encontrado. Intente de nuevo.")
+        # cashier_converter.print(cashiers_list) # Opcional: mostrar lista para elegir
+        dni_cashier = input("Introduce DNI cashier: ")
+        # Buscar en la lista
+        cashier = next((c for c in cashiers_list if str(c.dni) == dni_cashier), None)
+        
+        if cashier:
+            print(cashier.describe())
+        else:
+            print("Cashier not found")
+            return
 
         # b. Buscar cliente
-        selected_customer = None
-        while selected_customer is None:
-            dni_in = input("\nIntroduce DNI del cliente (ej. 1001): ")
-            for c in customers_list:
-                if str(c.dni) == dni_in.strip():
-                    selected_customer = c
-                    break
-            if selected_customer:
-                print(f"Seleccionado: {selected_customer.describe()}")
-            else:
-                print("Cliente no encontrado. Intente de nuevo.")
+        dni_customer = input("Introduce customer DNI: ")
+        customer = next((c for c in customers_list if str(c.dni) == dni_customer), None)
+        
+        if customer:
+            print(customer.describe())
+        else:
+            print("Customer not found")
+            return
 
         # c. Inicializar Orden
-        order = Order(selected_cashier, selected_customer)
+        order = Order(cashier, customer)
 
-        # d. Mostrar productos a vender
-        print("\n--- MENÚ DE PRODUCTOS ---")
-        p_conv.print(all_products)
+        # d. Mostrar productos a vender (Opcional, puede ser una lista larga)
+        # print("Product list:")
+        # product_converter.print(products_list)
 
-        # e. Escoger y f. Agregar productos
-        adding_products = True
-        while adding_products:
-            p_id = input("\nIntroduce ID del producto (ej. H1, G1): ")
-            found_product = None
-            for p in all_products:
-                if str(p.id) == p_id.strip():
-                    found_product = p
-                    break
+        # e. Escoger productos y f. Agregar productos
+        while True:
+            prod_id = input("Introduce product id: ")
+            selected_product = next((p for p in products_list if str(p.id) == prod_id), None)
             
-            if found_product:
-                print(f"Producto seleccionado: {found_product.describe()}")
-                order.add(found_product)
-                
-                answer = input("¿Desea agregar otro producto? (Si/No): ").lower()
-                if answer not in ['si', 'yes', 'y', 's']:
-                    adding_products = False
+            if selected_product:
+                print(selected_product.describe())
+                order.add(selected_product)
             else:
-                print("Producto no encontrado.")
+                print("Product not found")
 
-        # 4. Mostrar Orden Final
+            # Preguntar si quiere añadir otro
+            cont = input("Do you want to add another product? (Yes/No): ")
+            # Aceptamos 'Yes', 'yes', 'y', etc.
+            if cont.lower() not in ['yes', 'y']:
+                break
+        
+        # 4. Mostrar Orden
         order.show()
 
 if __name__ == "__main__":
-    PrepareOrder.main()
-                
-
+    app = PrepareOrder()
+    app.run()
