@@ -8,23 +8,19 @@ class Order:
     self.products = []
 
   def add(self, product : Product):
-      
-    #Write your code here
-      self.products.append(product)
-      print(f"Agregado: {product.name} - ${product.price}")
-      pass
+    self.products.append(product)
 
   def calculateTotal(self) -> float:
-    #Write your code here
-      total = 0.0
-      for p in self.products:
-          total += Product.price
-      return total
-      pass
+    total = 0.0
+    for product in self.products:
+        total += product.price
+    # Redondeamos a 2 decimales
+    return round(total, 2)
   
   def show(self):    
     print("Hello : "+self.customer.describe())
     print("Was attended by : "+self.cashier.describe())
-    for product in self.products:
-      print(product.describe())
+    # Enumerar productos para mostrar "Product 1", "Product 2"...
+    for i, product in enumerate(self.products, 1):
+      print(f"Product {i}: {product.describe()}")
     print(f"Total price : {self.calculateTotal()}")
