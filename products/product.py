@@ -14,7 +14,7 @@ class Product(ABC):
     def type(self) -> str:
         pass
     @abstractmethod
-    def foodPackage(self)->FoodPackage:
+    def foodPackage(self)-> FoodPackage:
         pass  
 
 class Hamburger(Product):
